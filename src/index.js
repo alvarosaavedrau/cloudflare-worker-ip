@@ -1,12 +1,12 @@
-addEventListener('fetch', event => {
-	const { request } = event;
-
-	if (request.method === 'GET') {
-		event.respondWith(getClientIP(request));
-	} else {
-		event.respondWith(sendErrorResponse(`Method not allowed: ${request.method}`, 405));
+export default {
+	fetch(request) {
+		if (request.method === 'GET') {
+			return getClientIP(request);
+		} else {
+			return sendErrorResponse(`Method not allowed: ${request.method}`, 405);
+		}
 	}
-});
+};
 
 async function getClientIP(request) {
 	const clientIP = request.headers.get('CF-Connecting-IP') || 'IP not found';
@@ -17,7 +17,7 @@ async function getClientIP(request) {
 			'Content-Type': 'text/plain; charset=utf-8',
 			'Cache-Control': 'no-cache, no-store, must-revalidate',
 			'X-Content-Type-Options': 'nosniff',
-		}
+		},
 	});
 }
 
@@ -29,6 +29,6 @@ function sendErrorResponse(message, statusCode = 400) {
 		headers: {
 			'Content-Type': 'application/json; charset=utf-8',
 			'Cache-Control': 'no-cache, no-store, must-revalidate',
-		}
+		},
 	});
 }
