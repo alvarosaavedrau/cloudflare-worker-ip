@@ -1,5 +1,16 @@
 export default {
-	fetch(request) {
+	async fetch(request, env) {
+		const { pathname } = new URL(request.url);
+
+		const { success } = await env.MY_RATE_LIMITER.limit({ key: pathname });
+
+		if (!success) {
+			return new Response(
+				`429 Failure - rate limit exceeded for ${pathname}`,
+				{ status: 429 }
+			);
+		}
+
 		if (request.method === 'GET') {
 			return getClientIP(request);
 		} else {
