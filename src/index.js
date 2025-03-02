@@ -1,6 +1,6 @@
 export default {
 	async fetch(request, env) {
-		const { pathname } = new URL(request.url);
+		const { pathname, searchParams } = new URL(request.url);
 
 		const { success } = await env.MY_RATE_LIMITER.limit({ key: pathname });
 
@@ -12,15 +12,27 @@ export default {
 		}
 
 		if (request.method === 'GET') {
-			return getClientIP(request);
+			const format = searchParams.get('format');
+			return getClientIP(request, format);
 		} else {
 			return sendErrorResponse(`Method not allowed: ${request.method}`, 405);
 		}
 	}
 };
 
-async function getClientIP(request) {
+async function getClientIP(request, format) {
 	const clientIP = request.headers.get('CF-Connecting-IP') || 'IP not found';
+
+	if (format === 'json') {
+		return new Response(JSON.stringify({ ip: clientIP }), {
+			status: 200,
+			headers: {
+				'Content-Type': 'application/json; charset=utf-8',
+				'Cache-Control': 'no-cache, no-store, must-revalidate',
+				'X-Content-Type-Options': 'nosniff',
+			},
+		});
+	}
 
 	return new Response(clientIP, {
 		status: 200,
